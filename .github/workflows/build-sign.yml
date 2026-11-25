@@ -3,29 +3,43 @@ name: Build and Sign
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
+permissions: {}
 
 jobs:
-  build:
+  build-and-test:
     runs-on: windows-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Build Black Browser (x64)
         shell: cmd
         run: ci-build.bat
 
-      - name: Upload artifact for SignPath signing
+      - name: Run Security Regression Tests
+        shell: pwsh
+        run: .\tests\run-security-tests.ps1
+
+      - name: Upload unsigned build artifact
         id: upload_unsigned
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: BlackBrowser-unsigned
           path: Black.exe
 
+  sign:
+    needs: build-and-test
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
       - name: Check SignPath Secrets Availability
         id: signpath_check
         shell: pwsh
@@ -40,19 +54,19 @@ jobs:
 
       - name: Sign with SignPath.io
         if: steps.signpath_check.outputs.enabled == 'true'
-        uses: signpath/github-action-submit-signing-request@v3
+        uses: signpath/github-action-submit-signing-request@a2c5b60d9c75f073142b653c354b632eedce097b # v3
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
           project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
-          github-artifact-id: ${{ steps.upload_unsigned.outputs.artifact-id }}
+          github-artifact-id: ${{ needs.build-and-test.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: ./signed
 
       - name: Upload signed binary
         if: steps.signpath_check.outputs.enabled == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: BlackBrowser-signed
           path: ./signed/*.exe

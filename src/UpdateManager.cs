@@ -32,7 +32,102 @@ namespace BlackBrowser
     {
         public const string CurrentVersion = "v9.1.0";
         public const string GitHubRepo = "shivamkumarmehta64-sketch/Black-Firefox";
+        public const long MaxUpdatePackageBytes = 250L * 1024L * 1024L; // 250 MB hard cap
         private static readonly string ApiUrl = "https://api.github.com/repos/" + GitHubRepo + "/releases/latest";
+
+        // Optional RSA public key XML for detached manifest signature verification (SHA256SUMS.txt.sig).
+        // When populated, updates require a valid signature in addition to a matching SHA-256 checksum.
+        public static string EmbeddedManifestPublicKeyXml = "";
+
+        private static readonly string[] AllowedReleaseHosts = new string[]
+        {
+            "github.com",
+            "objects.githubusercontent.com",
+            "release-assets.githubusercontent.com",
+            "github-releases.githubusercontent.com"
+        };
+
+        public static bool IsAllowedReleaseUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return false;
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return false;
+            if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)) return false;
+
+            string host = uri.Host.ToLowerInvariant();
+            if (host == "github.com")
+            {
+                string expectedPrefix = "/" + GitHubRepo + "/releases/";
+                return uri.AbsolutePath.StartsWith(expectedPrefix, StringComparison.OrdinalIgnoreCase);
+            }
+
+            foreach (string allowed in AllowedReleaseHosts)
+            {
+                if (allowed != "github.com" && host == allowed) return true;
+            }
+            return false;
+        }
+
+        public static string ParseExpectedSha256FromManifest(string sumsText, string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(sumsText) || string.IsNullOrWhiteSpace(fileName)) return null;
+
+            string targetName = Path.GetFileName(fileName.Trim());
+            string[] lines = sumsText.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string line in lines)
+            {
+                Match m = Regex.Match(line.Trim(), @"^([a-fA-F0-9]{64})\s+\*?(.+)$");
+                if (m.Success)
+                {
+                    string listedName = Path.GetFileName(m.Groups[2].Value.Trim());
+                    if (string.Equals(listedName, targetName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return m.Groups[1].Value.ToLowerInvariant();
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static bool VerifyManifestSignature(string sumsText, string signatureBase64, string publicKeyXml)
+        {
+            if (string.IsNullOrWhiteSpace(sumsText) || string.IsNullOrWhiteSpace(signatureBase64) || string.IsNullOrWhiteSpace(publicKeyXml))
+                return false;
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(sumsText);
+                byte[] sig = Convert.FromBase64String(signatureBase64.Trim());
+                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+                {
+                    rsa.FromXmlString(publicKeyXml);
+                    return rsa.VerifyData(data, CryptoConfig.MapNameToOID("SHA256"), sig);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static bool VerifyDownloadedPackage(string filePath, string fileName, string expectedHash)
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath) || string.IsNullOrEmpty(expectedHash))
+                return false;
+            if (!Regex.IsMatch(expectedHash, @"^[a-fA-F0-9]{64}$"))
+                return false;
+
+            FileInfo fi = new FileInfo(filePath);
+            if (fi.Length <= 0 || fi.Length > MaxUpdatePackageBytes)
+                return false;
+
+            using (FileStream fs = File.OpenRead(filePath))
+            using (SHA256 sha = SHA256.Create())
+            {
+                byte[] hash = sha.ComputeHash(fs);
+                string actualHash = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                return string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase);
+            }
+        }
 
         private class ReleaseAsset
         {
@@ -228,8 +323,8 @@ namespace BlackBrowser
 
         private static bool VerifyFileChecksum(string filePath, string fileName, string checksumUrl)
         {
-            if (string.IsNullOrEmpty(checksumUrl)) return true;
-            if (!checksumUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return false;
+            // Fail closed: checksum manifest URL is mandatory and must come from an allowed release host.
+            if (!IsAllowedReleaseUrl(checksumUrl)) return false;
 
             try
             {
@@ -240,33 +335,25 @@ namespace BlackBrowser
                     wc.Headers.Add("User-Agent", "Black-Browser/" + CurrentVersion);
                     sumsText = wc.DownloadString(checksumUrl);
                 }
-                if (string.IsNullOrWhiteSpace(sumsText)) return true;
 
-                string expectedHash = null;
-                string[] lines = sumsText.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string line in lines)
+                string expectedHash = ParseExpectedSha256FromManifest(sumsText, fileName);
+                if (string.IsNullOrEmpty(expectedHash)) return false;
+
+                if (!string.IsNullOrWhiteSpace(EmbeddedManifestPublicKeyXml))
                 {
-                    Match m = Regex.Match(line.Trim(), @"^([a-fA-F0-9]{64})\s+\*?(.+)$");
-                    if (m.Success)
+                    string sigUrl = checksumUrl + ".sig";
+                    if (!IsAllowedReleaseUrl(sigUrl)) return false;
+                    string sigText;
+                    using (WebClient wc = new WebClient())
                     {
-                        string listedName = Path.GetFileName(m.Groups[2].Value.Trim());
-                        if (string.Equals(listedName, fileName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            expectedHash = m.Groups[1].Value.ToLowerInvariant();
-                            break;
-                        }
+                        wc.Headers.Add("User-Agent", "Black-Browser/" + CurrentVersion);
+                        sigText = wc.DownloadString(sigUrl);
                     }
+                    if (!VerifyManifestSignature(sumsText, sigText, EmbeddedManifestPublicKeyXml))
+                        return false;
                 }
 
-                if (string.IsNullOrEmpty(expectedHash)) return true;
-
-                using (FileStream fs = File.OpenRead(filePath))
-                using (SHA256 sha = SHA256.Create())
-                {
-                    byte[] hash = sha.ComputeHash(fs);
-                    string actualHash = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-                    return string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase);
-                }
+                return VerifyDownloadedPackage(filePath, fileName, expectedHash);
             }
             catch
             {
@@ -292,15 +379,27 @@ namespace BlackBrowser
         {
             if (release == null || string.IsNullOrEmpty(release.DownloadUrl)) return;
 
-            if (!release.DownloadUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            if (!IsAllowedReleaseUrl(release.DownloadUrl))
             {
-                if (onStatus != null) onStatus("⚠️ Insecure update URL rejected.");
+                if (onStatus != null) onStatus("⚠️ Untrusted or insecure update URL rejected.");
                 return;
             }
 
             if (!release.IsInstaller && !release.IsZipArchive)
             {
                 try { Process.Start(new ProcessStartInfo(release.DownloadUrl) { UseShellExecute = true }); } catch { }
+                return;
+            }
+
+            if (!IsAllowedReleaseUrl(release.ChecksumUrl))
+            {
+                if (onStatus != null) onStatus("⚠️ Missing or untrusted checksum manifest URL. Update aborted.");
+                return;
+            }
+
+            if (release.FileSize > MaxUpdatePackageBytes)
+            {
+                if (onStatus != null) onStatus("⚠️ Update package exceeds maximum allowed size.");
                 return;
             }
 
@@ -371,12 +470,31 @@ namespace BlackBrowser
                         return;
                     }
 
-                    // Portable ZIP in-place replacement flow
+                    // Portable ZIP in-place replacement flow (with Zip-Slip path traversal guard)
                     try
                     {
                         string stagedDir = Path.Combine(tempDir, "staged");
                         if (Directory.Exists(stagedDir)) Directory.Delete(stagedDir, true);
-                        ZipFile.ExtractToDirectory(destFile, stagedDir);
+                        Directory.CreateDirectory(stagedDir);
+                        string fullStagedRoot = Path.GetFullPath(stagedDir + Path.DirectorySeparatorChar);
+                        using (ZipArchive archive = ZipFile.OpenRead(destFile))
+                        {
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                string targetPath = Path.GetFullPath(Path.Combine(stagedDir, entry.FullName));
+                                if (!targetPath.StartsWith(fullStagedRoot, StringComparison.OrdinalIgnoreCase))
+                                    throw new InvalidOperationException("Zip entry escapes target directory: " + entry.FullName);
+                                if (string.IsNullOrEmpty(entry.Name))
+                                {
+                                    Directory.CreateDirectory(targetPath);
+                                }
+                                else
+                                {
+                                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                                    entry.ExtractToFile(targetPath, true);
+                                }
+                            }
+                        }
 
                         string sourceRoot = FindPackageRootWithExe(stagedDir);
                         if (string.IsNullOrEmpty(sourceRoot))

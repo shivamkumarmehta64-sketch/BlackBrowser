@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -28,6 +29,98 @@ namespace BlackBrowser
 
         [DllImport("user32.dll")]
         public static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct WINTRUST_FILE_INFO
+        {
+            public uint cbStruct;
+            public string pcwszFilePath;
+            public IntPtr hFile;
+            public IntPtr pgKnownSubject;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct WINTRUST_DATA
+        {
+            public uint cbStruct;
+            public IntPtr pPolicyCallbackData;
+            public IntPtr pSIPClientData;
+            public uint dwUIChoice;
+            public uint fdwRevocationChecks;
+            public uint dwUnionChoice;
+            public IntPtr pFile;
+            public uint dwStateAction;
+            public IntPtr hWVTStateData;
+            public IntPtr pwszURLReference;
+            public uint dwProvFlags;
+            public uint dwUIContext;
+        }
+
+        [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]
+        private static extern int WinVerifyTrust(IntPtr hwnd, [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID, ref WINTRUST_DATA pWVTData);
+
+        public static bool VerifyAuthenticodePublisher(string filePath, string expectedPublisher, out string failureReason)
+        {
+            failureReason = null;
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                failureReason = "Installer file not found.";
+                return false;
+            }
+
+            IntPtr fileInfoPtr = IntPtr.Zero;
+            try
+            {
+                Guid actionGuid = new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}"); // WINTRUST_ACTION_GENERIC_VERIFY_V2
+                WINTRUST_FILE_INFO fileInfo = new WINTRUST_FILE_INFO
+                {
+                    cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_FILE_INFO)),
+                    pcwszFilePath = filePath,
+                    hFile = IntPtr.Zero,
+                    pgKnownSubject = IntPtr.Zero
+                };
+
+                fileInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(WINTRUST_FILE_INFO)));
+                Marshal.StructureToPtr(fileInfo, fileInfoPtr, false);
+
+                WINTRUST_DATA trustData = new WINTRUST_DATA
+                {
+                    cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_DATA)),
+                    dwUIChoice = 2, // WTD_UI_NONE
+                    fdwRevocationChecks = 0, // WTD_REVOKE_NONE (offline-safe; chain checked)
+                    dwUnionChoice = 1, // WTD_CHOICE_FILE
+                    pFile = fileInfoPtr,
+                    dwStateAction = 0, // WTD_STATEACTION_IGNORE
+                    dwProvFlags = 0x00000010 // WTD_REVOCATION_CHECK_NONE
+                };
+
+                int status = WinVerifyTrust(IntPtr.Zero, actionGuid, ref trustData);
+                if (status != 0)
+                {
+                    failureReason = "Authenticode signature verification failed (WinVerifyTrust status 0x" + status.ToString("X8") + ").";
+                    return false;
+                }
+
+                X509Certificate cert = X509Certificate.CreateFromSignedFile(filePath);
+                if (cert == null || string.IsNullOrEmpty(cert.Subject) ||
+                    cert.Subject.IndexOf(expectedPublisher, StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    failureReason = "Unexpected installer publisher: " + (cert != null ? cert.Subject : "none");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                failureReason = "Signature check error: " + ex.Message;
+                return false;
+            }
+            finally
+            {
+                if (fileInfoPtr != IntPtr.Zero) Marshal.FreeHGlobal(fileInfoPtr);
+            }
+        }
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
@@ -312,6 +405,19 @@ namespace BlackBrowser
 
                 if (File.Exists(bootstrapperPath))
                 {
+                    string sigError;
+                    if (!VerifyAuthenticodePublisher(bootstrapperPath, "Microsoft Corporation", out sigError))
+                    {
+                        try { File.Delete(bootstrapperPath); } catch { }
+                        AppendLog("[" + DateTime.Now.ToString("HH:mm:ss") + "] WebView2 bootstrapper rejected: " + sigError);
+                        MessageBox.Show(
+                            "WebView2 bootstrapper signature verification failed and execution was blocked.\n\n" + sigError,
+                            "Black Browser — Security Verification Failed",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                        return false;
+                    }
+
                     using (Process p = Process.Start(new ProcessStartInfo(bootstrapperPath, "/install") { UseShellExecute = true }))
                     {
                         if (p != null) p.WaitForExit();
