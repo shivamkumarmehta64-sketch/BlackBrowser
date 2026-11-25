@@ -1,412 +1,472 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shivam's Apps — Free Desktop Apps & Browser</title>
-<meta name="description" content="Free, ad-free desktop apps by Shivam: Black browser, mtube (YouTube Music), ytube (YouTube), and more. No ads, no cost, open source.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://api.github.com https://us.i.posthog.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://us.i.posthog.com https://*.posthog.com; base-uri 'self'">
-<link rel="stylesheet" href="assets/tailwind.css">
-<link rel="icon" type="image/png" href="assets/black.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script>
-  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)")},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>Black Browser v9.1.0 — Fast, Private Native Windows Browser</title>
+  <meta name="description" content="Black Browser is a ~460 KB native Windows 10/11 browser engineered in C# (.NET 4.8) and Microsoft WebView2. Features 3-Layer AdShield, Windows DPAPI password vault, and under 60 MB RAM." />
+  <meta property="og:title" content="Black Browser v9.1.0 — Fast, Private Native Windows Browser" />
+  <meta property="og:description" content="~460 KB native Windows browser with 3-Layer AdShield, DPAPI local vault, and zero cloud telemetry." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shivamkumarmehta64-sketch.github.io/Black-Firefox/" />
+  <meta property="og:image" content="https://shivamkumarmehta64-sketch.github.io/Black-Firefox/assets/black.png" />
+  <link rel="icon" type="image/png" href="assets/black.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #000000;
+      --glass: rgba(24, 24, 28, 0.72);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-specular: rgba(255, 255, 255, 0.16);
+      --border-hover: rgba(255, 255, 255, 0.26);
+      --text: #f5f5f7;
+      --text-secondary: #a1a1a6;
+      --text-muted: #8e8e93;
+      --blue: #0a84ff;
+      --green: #30d158;
+      --cyan: #64d2ff;
+      --purple: #bf5af2;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-pill: 9999px;
+      --max-w: 1080px;
+      --spring: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; background: var(--bg); color-scheme: dark; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 75% 45% at 50% -10%, rgba(10, 132, 255, 0.18), transparent 70%),
+        radial-gradient(ellipse 45% 35% at 85% 25%, rgba(48, 209, 88, 0.09), transparent 65%);
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 max(1.5rem, env(safe-area-inset-right)) 0 max(1.5rem, env(safe-area-inset-left));
+    }
+
+    /* Frosted Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      background: rgba(12, 12, 14, 0.72);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0.75rem max(1.5rem, env(safe-area-inset-right)) 0.75rem max(1.5rem, env(safe-area-inset-left));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-weight: 700;
+      font-size: 0.98rem;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      object-fit: contain;
+      border: 1px solid var(--border-specular);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.65rem;
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 44px;
+      padding: 0.7rem 1.4rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      border: 1px solid transparent;
+      transition: all 0.25s var(--spring);
+      cursor: pointer;
+    }
+    .btn-sm { min-height: 36px; padding: 0.42rem 0.95rem; font-size: 0.8rem; }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #2693ff; transform: translateY(-1px); }
+    .btn-white { background: #fff; color: #000; }
+    .btn-white:hover { background: #e8e8ed; transform: translateY(-1px); }
+    .btn-glass {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-color: var(--border-specular);
+    }
+    .btn-glass:hover { background: rgba(255, 255, 255, 0.14); border-color: var(--border-hover); }
+
+    /* Hero */
+    .hero {
+      padding: 5.5rem 0 4rem;
+      text-align: center;
+    }
+    .hero-emblem {
+      width: 84px;
+      height: 84px;
+      border-radius: 20px;
+      margin: 0 auto 1.5rem;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-specular);
+      box-shadow: 0 24px 50px rgba(10, 132, 255, 0.22);
+      display: grid;
+      place-items: center;
+    }
+    .hero-emblem img { width: 100%; height: 100%; object-fit: contain; border-radius: 14px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: var(--radius-pill);
+      background: rgba(10, 132, 255, 0.12);
+      border: 1px solid rgba(10, 132, 255, 0.25);
+      color: var(--cyan);
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .dot-live {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.4rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 1.25rem;
+    }
+    .hero-sub {
+      max-width: 640px;
+      margin: 0 auto 2.25rem;
+      color: var(--text-secondary);
+      font-size: clamp(1.02rem, 2vw, 1.22rem);
+      line-height: 1.55;
+    }
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .release-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Stats Strip */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin: 3.5rem auto 0;
+      padding: 1.35rem;
+      border-radius: var(--radius-lg);
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--border-specular);
+    }
+    .stat-box { text-align: left; }
+    .stat-num { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text); }
+    .stat-lbl { font-size: 0.76rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* Bento Features */
+    section { padding: 4.5rem 0; }
+    .section-head { text-align: center; max-width: 680px; margin: 0 auto 3rem; }
+    .section-kicker { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--blue); margin-bottom: 0.5rem; display: block; }
+    .section-title { font-size: clamp(1.9rem, 4vw, 2.85rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.1; }
+
+    .bento {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--border-specular);
+      border-radius: var(--radius-lg);
+      padding: 1.85rem;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    }
+    .card-badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .card h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.6rem; }
+    .card p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.55; }
+
+    /* Memory Benchmark Card */
+    .bench-panel {
+      background: var(--glass);
+      border: 1px solid var(--border-specular);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .bench-row { margin-bottom: 1.15rem; }
+    .bench-row:last-child { margin-bottom: 0; }
+    .bench-meta { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.45rem; }
+    .bench-track { height: 10px; border-radius: var(--radius-pill); background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+    .bench-fill { height: 100%; border-radius: var(--radius-pill); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem max(2.5rem, env(safe-area-inset-bottom));
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.25rem;
+      margin-bottom: 0.85rem;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    @media (pointer: coarse) {
+      .btn-sm { min-height: 44px; min-width: 44px; }
+    }
+    @media (max-width: 900px) {
+      .bento { grid-template-columns: 1fr; }
+      .stats-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 560px) {
+      .hero { padding: 3.5rem 0 2.75rem; }
+      .hero-emblem { width: 68px; height: 68px; border-radius: 16px; }
+      .stats-strip { grid-template-columns: 1fr; }
+      .bench-panel { padding: 1.45rem; }
+    }
+  </style>
 </head>
-<body class="mesh-bg text-slate-200 min-h-screen antialiased">
+<body>
+  <div class="ambient" aria-hidden="true"></div>
 
-<!-- NAV -->
-<header class="sticky top-0 inset-x-0 z-50">
-  <nav class="nav-glass mx-auto mt-4 max-w-6xl rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2.5">
-      <img src="assets/black.png" alt="Logo" class="w-8 h-8 rounded-lg">
-      <span class="font-bold text-white tracking-tight">Shivam's <span class="text-grad">Apps</span></span>
-    </a>
-    <nav class="hidden md:flex items-center gap-6 text-sm text-slate-300">
-      <a href="/" class="text-white" aria-current="page">Home</a>
-      <a href="/apps.html" class="hover:text-white transition">Apps</a>
-      <a href="/achievements.html" class="hover:text-white transition">Achievements</a>
-      <a href="/history.html" class="hover:text-white transition">History</a>
-      <a href="/releases.html" class="hover:text-white transition">Releases</a>
-      <a href="/about.html" class="hover:text-white transition">About</a>
-      <a href="/privacy.html" class="hover:text-white transition">FAQ</a>
-      <a href="/birthday.html" class="hover:text-white transition">??</a>
-</nav>
-    <a href="https://github.com/shivamkumarmehta64-sketch" target="_blank" rel="noopener"
-       class="text-sm px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition">GitHub</a>
-  </nav>
-</header>
-
-<!-- HERO -->
-<section class="relative overflow-hidden pt-24 pb-12 px-4 text-center">
-  <div class="cine-hero" aria-hidden="true">
-    <div class="cine-kb"></div>
-    <div class="cine-shade"></div>
-    <div class="cine-parts" id="cine-parts"></div>
-  </div>
-  <div class="blob blob-1" data-parallax="0.18"></div>
-  <div class="blob blob-2" data-parallax="-0.12"></div>
-  <div class="blob blob-3" data-parallax="0.3"></div>
-  <div class="fade-up max-w-3xl mx-auto relative">
-    <div class="inline-flex flex-wrap items-center justify-center gap-2 mb-6">
-      <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-300 bg-indigo-500/10 border border-indigo-400/20 rounded-full px-4 py-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Free · Open Source · No ads
-      </span>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="./" class="brand">
+        <img src="assets/black.png" alt="Black Browser" />
+        <span>Black Browser</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#benchmark">Efficiency</a>
+        <a href="releases.html">Releases</a>
+        <a href="privacy.html">Privacy</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox" target="_blank" rel="noopener noreferrer" class="btn btn-glass btn-sm">GitHub</a>
+        <a id="nav-dl-btn" href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases/download/v9.1.0/BlackBrowser-v9.1.0-Windows-x64-Setup.exe" class="btn btn-primary btn-sm">Download</a>
+      </div>
     </div>
-    <h1 class="cine-hero-title text-5xl sm:text-6xl md:text-8xl font-black text-white tracking-tight leading-tight">
-      Fast, private apps that<br class="hidden sm:block"> <span class="text-grad">just work.</span>
-    </h1>
-    <p class="mt-6 text-lg text-slate-400 max-w-xl mx-auto">
-      Hand-crafted desktop apps — an ad-free browser, an ad-free YouTube, and an ad-free YouTube Music — built for Windows, free forever.
-    </p>
-    <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-      <a href="/apps.html" class="w-full sm:w-auto text-center px-8 py-3.5 btn-primary text-base">Get the Apps</a>
-      <a href="/releases.html" class="w-full sm:w-auto text-center px-8 py-3.5 btn-ghost text-base">Latest releases</a>
-    </div>
-  </div>
-</section>
+  </header>
 
-<!-- EXPLORE -->
-<section id="gh-profile" class="px-4 pb-14">
-  <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-5">
-    <a href="/achievements.html" class="achievement-card glow-card reveal">
-      <div class="shimmer"></div>
-      <div class="flex items-center gap-3">
-        <div class="achievement-emoji">🏆</div>
-        <h5 class="font-bold text-white">GitHub Achievements</h5>
-      </div>
-      <p class="mt-2 text-sm text-slate-400">Live profile stats, stars, followers and the milestones behind the projects.</p>
-      <span class="mt-4 inline-block text-sm font-semibold text-indigo-300">Open Achievements ↗</span>
-    </a>
-    <a href="/history.html" class="achievement-card glow-card reveal">
-      <div class="shimmer"></div>
-      <div class="flex items-center gap-3">
-        <div class="achievement-emoji">📜</div>
-        <h5 class="font-bold text-white">Project History</h5>
-      </div>
-      <p class="mt-2 text-sm text-slate-400">Recent commits and activity, pulled live from GitHub into a clean timeline.</p>
-      <span class="mt-4 inline-block text-sm font-semibold text-indigo-300">View History ↗</span>
-    </a>
-  </div>
-</section>
-
-<!-- FEATURED: THE APPS -->
-<section id="featured" class="px-4 pb-14">
-  <div data-repo="shivamkumarmehta64-sketch/ytube" class="glow-card grad-border max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 reveal">
-    <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-      <div class="flex -space-x-4">
-        <img src="assets/ytube.png" alt="ytube logo" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl ring-2 ring-indigo-500/40">
-        <img src="assets/mtube.png" alt="mtube logo" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl ring-2 ring-cyan-500/40">
-        <img src="assets/black.png" alt="Black logo" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl ring-2 ring-violet-500/40">
-      </div>
-      <div class="flex-1 text-center lg:text-left">
-        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-          <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tight">ytube <span class="text-slate-500">+</span> mtube <span class="text-slate-500">+</span> Black</h2>
-          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/20">LIVE</span>
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-emblem">
+          <img src="assets/black.png" alt="Black Browser App Icon" />
         </div>
-        <p class="mt-3 text-slate-400 max-w-xl mx-auto lg:mx-0">
-          Three open-source apps you can download today — an ad-free YouTube, an ad-free YouTube Music, and a glassmorphism browser. Lightweight, private, and free.
+        <div class="eyebrow">
+          <span class="dot-live"></span>
+          <span id="version-badge">v9.1.0 · Windows 10 / 11 (x64) · MIT Open Source</span>
+        </div>
+        <h1>Fast. Private.<br />Built for Windows.</h1>
+        <p class="hero-sub">
+          A native ~460 KB desktop browser engineered in C# (.NET 4.8) and Microsoft WebView2. Built-in 3-Layer AdShield, Windows DPAPI local vault, and zero cloud telemetry.
         </p>
-        <div class="mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs">
-          <span class="chip">SponsorBlock</span>
-          <span class="chip">Media keys</span>
-          <span class="chip">Picture-in-Picture</span>
-          <span class="chip">Ad blocking</span>
-          <span class="chip">Low RAM</span>
+        <div class="hero-ctas">
+          <a id="hero-setup-btn" href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases/download/v9.1.0/BlackBrowser-v9.1.0-Windows-x64-Setup.exe" class="btn btn-white">
+            Download Installer (.exe)
+          </a>
+          <a id="hero-zip-btn" href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases/download/v9.1.0/BlackBrowser-v9.1.0-Windows-x64.zip" class="btn btn-glass">
+            Portable ZIP
+          </a>
+          <a id="hero-sha-btn" href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases/download/v9.1.0/SHA256SUMS.txt" class="btn btn-glass">
+            SHA-256
+          </a>
         </div>
-        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-          <a href="/apps.html" class="w-full sm:w-auto text-center px-6 py-3 btn-primary">Browse all apps</a>
-          <a href="https://github.com/shivamkumarmehta64-sketch" target="_blank" rel="noopener" class="w-full sm:w-auto text-center px-6 py-3 btn-ghost">GitHub profile ↗</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURED: BLACK BROWSER -->
-<section id="featured-browser" class="px-4 pb-14">
-  <div data-repo="shivamkumarmehta64-sketch/Black-Firefox" class="glow-card grad-border max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 reveal">
-    <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-      <div>
-        <img src="assets/black-browser.png" alt="Black Browser logo" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl ring-2 ring-orange-500/40">
-      </div>
-      <div class="flex-1 text-center lg:text-left">
-        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-          <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tight">Black <span class="text-grad">Browser</span></h2>
-          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-orange-500/15 text-orange-300 border border-orange-400/20">NEW</span>
-        </div>
-        <p class="mt-3 text-slate-400 max-w-xl mx-auto lg:mx-0">
-          Our native Windows browser — reborn. Same tiny footprint, now on WebView2 with a 3-layer ad blocker, local bookmarks and Edge-style tabs.
+        <p class="release-meta mono" id="release-meta">
+          BlackBrowser-v9.1.0-Windows-x64-Setup.exe · Verified SHA-256 · Requires Windows 10/11
         </p>
-        <div class="mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs">
-          <span class="chip">WebView2</span>
-          <span class="chip">3-layer ad blocker</span>
-          <span class="chip">Local bookmarks</span>
-          <span class="chip">No Electron</span>
-        </div>
-        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-          <a data-download="shivamkumarmehta64-sketch/Black-Firefox" data-exts="setup.exe,.zip" href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases" target="_blank" rel="noopener" class="w-full sm:w-auto text-center px-6 py-3 btn-primary">Download for Windows</a>
-          <a href="/app/black-browser.html" class="w-full sm:w-auto text-center px-6 py-3 btn-ghost">Learn more →</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- PROJECT GRID -->
-<section id="apps" class="px-4 pb-16">
-  <div class="max-w-6xl mx-auto mb-8 flex flex-wrap items-end justify-between gap-4 px-1">
-    <div>
-      <h3 class="text-2xl font-bold text-white">Projects</h3>
-      <p class="text-slate-400 mt-1">Every project is free, open source, and yours to keep. Live stats from GitHub.</p>
-    </div>
-    <a href="/releases.html" class="text-sm text-indigo-300 hover:text-indigo-200 transition">View all releases ↗</a>
-  </div>
-  <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-    <!-- ytube -->
-    <article data-repo="shivamkumarmehta64-sketch/ytube" class="glass rounded-3xl p-6 card-hover flex flex-col reveal">
-      <div class="flex items-start justify-between">
-        <img src="assets/ytube.png" alt="ytube logo" class="w-16 h-16 rounded-2xl ring-1 ring-white/10">
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/20">LIVE</span>
-      </div>
-      <h4 class="mt-4 text-xl font-bold text-white">ytube</h4>
-      <p class="mt-2 text-sm text-slate-400 flex-1">Ad-free YouTube player — SponsorBlock, Picture-in-Picture, media keys and a tight RAM budget.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="stat-chip">⭐ <span data-stat="stars" class="k">…</span></span>
-        <span class="stat-chip">🔀 <span data-stat="forks" class="k">…</span></span>
-        <span class="stat-chip"><span data-stat="lang">…</span></span>
-      </div>
-      <div class="mt-2 text-xs text-slate-500">🕒 updated <span data-stat="updated">…</span></div>
-      <div class="mt-4 flex flex-col gap-2">
-        <a data-download="shivamkumarmehta64-sketch/ytube" data-exts=".zip,.exe" href="https://github.com/shivamkumarmehta64-sketch/ytube/releases" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-primary">Download</a>
-        <a href="/app/ytube.html" class="w-full text-center px-5 py-2.5 btn-ghost">Details & install guide</a>
-      </div>
-    </article>
-
-    <!-- mtube -->
-    <article data-repo="shivamkumarmehta64-sketch/mtube" class="glass rounded-3xl p-6 card-hover flex flex-col reveal">
-      <div class="flex items-start justify-between">
-        <img src="assets/mtube.png" alt="mtube logo" class="w-16 h-16 rounded-2xl ring-1 ring-white/10">
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/20">LIVE</span>
-      </div>
-      <h4 class="mt-4 text-xl font-bold text-white">mtube</h4>
-      <p class="mt-2 text-sm text-slate-400 flex-1">Ad-free YouTube Music desktop client — background playback, SponsorBlock, media keys, audio-only mode.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="stat-chip">⭐ <span data-stat="stars" class="k">…</span></span>
-        <span class="stat-chip">🔀 <span data-stat="forks" class="k">…</span></span>
-        <span class="stat-chip"><span data-stat="lang">…</span></span>
-      </div>
-      <div class="mt-2 text-xs text-slate-500">🕒 updated <span data-stat="updated">…</span></div>
-      <div class="mt-4 flex flex-col gap-2">
-        <a data-download="shivamkumarmehta64-sketch/mtube" data-exts=".zip,.exe" href="https://github.com/shivamkumarmehta64-sketch/mtube/releases" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-primary">Download</a>
-        <a href="/app/mtube.html" class="w-full text-center px-5 py-2.5 btn-ghost">Details & install guide</a>
-      </div>
-    </article>
-
-    <!-- Black (Electron) -->
-    <article data-repo="shivamkumarmehta64-sketch/Black" class="glass rounded-3xl p-6 card-hover flex flex-col reveal">
-      <div class="flex items-start justify-between">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/30 to-cyan-500/30 ring-1 ring-white/10 flex items-center justify-center text-3xl font-extrabold text-indigo-200">B</div>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">ELECTRON</span>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/5 text-cyan-300 border border-white/10">v1.0.0</span>
-      </div>
-      <h4 class="mt-4 text-xl font-bold text-white">Black Browser</h4>
-      <p class="mt-2 text-sm text-slate-400 flex-1">Glassmorphism browser — tab sleeping, media suite, collapsible sidebar, built-in ad blocking and a master-password password manager.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="stat-chip">⭐ <span data-stat="stars" class="k">…</span></span>
-        <span class="stat-chip">🔀 <span data-stat="forks" class="k">…</span></span>
-        <span class="stat-chip"><span data-stat="lang">…</span></span>
-      </div>
-      <div class="mt-2 text-xs text-slate-500">🕒 updated <span data-stat="updated">…</span></div>
-      <div class="mt-4 flex flex-col gap-2">
-        <a href="https://github.com/shivamkumarmehta64-sketch/Black/releases/download/v1.0.0/Black.Portable.1.0.0.exe" class="w-full text-center px-5 py-2.5 btn-primary">Download Portable</a>
-        <a href="https://github.com/shivamkumarmehta64-sketch/Black/releases/download/v1.0.0/Black_Browser_Release.zip" class="w-full text-center px-5 py-2.5 btn-primary">Download Stable</a>
-        <a href="https://github.com/shivamkumarmehta64-sketch/Black/releases/download/v1.0.0/Black-1.0.0-x86_64.AppImage" class="w-full text-center px-5 py-2.5 btn-ghost">Download Linux (AppImage)</a>
-        <a href="/app/black.html" class="w-full text-center px-5 py-2.5 btn-ghost">Details</a>
-      </div>
-    </article>
-
-    <!-- Black Browser -->
-    <article data-repo="shivamkumarmehta64-sketch/Black-Firefox" class="glass rounded-3xl p-6 card-hover flex flex-col reveal">
-      <div class="flex items-start justify-between">
-        <img src="assets/black-browser.png" alt="Black Browser logo" class="w-16 h-16 rounded-2xl ring-1 ring-white/10">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">NATIVE</span>
-          <span data-version="shivamkumarmehta64-sketch/Black-Firefox" class="text-xs font-semibold px-3 py-1 rounded-full bg-white/5 text-cyan-300 border border-white/10">v9.1.0</span>
+        <div class="stats-strip">
+          <div class="stat-box">
+            <div class="stat-num">~460 KB</div>
+            <div class="stat-lbl">Native Binary Footprint</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">&lt; 60 MB</div>
+            <div class="stat-lbl">Idle RAM Consumption</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">3-Layer</div>
+            <div class="stat-lbl">Built-In AdShield</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">0 Bytes</div>
+            <div class="stat-lbl">Cloud Telemetry Sent</div>
+          </div>
         </div>
       </div>
-<h4 class="mt-4 text-xl font-bold text-white">Black Browser</h4>
-      <p class="mt-2 text-sm text-slate-400 flex-1">Ultra-lightweight native Windows browser on WebView2 — 3-layer ad blocker, local bookmarks. No Electron.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="stat-chip">⭐ <span data-stat="stars" class="k">…</span></span>
-        <span class="stat-chip">🔀 <span data-stat="forks" class="k">…</span></span>
-        <span class="stat-chip"><span data-stat="lang">…</span></span>
-      </div>
-      <div class="mt-2 text-xs text-slate-500">🕒 updated <span data-stat="updated">…</span></div>
-      <div class="mt-4 flex flex-col gap-2">
-        <a data-download="shivamkumarmehta64-sketch/Black-Firefox" data-exts="setup.exe,.zip" href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-primary">Download Setup</a>
-        <a data-download="shivamkumarmehta64-sketch/Black-Firefox" data-exts=".zip" href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-ghost">Download Portable (.zip)</a>
-        <a href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-ghost">View repo ↗</a>
-        <a href="/app/black-browser.html" class="w-full text-center px-5 py-2.5 btn-ghost">Details</a>
-      </div>
-    </article>
+    </section>
 
-    <!-- Blue Browser -->
-    <article data-repo="shivamkumarmehta64-sketch/Blue-Browser-Tauri" class="glass rounded-3xl p-6 card-hover flex flex-col reveal">
-      <div class="flex items-start justify-between">
-        <div class="w-16 h-16 rounded-2xl ring-1 ring-white/10 overflow-hidden">
-        <img src="assets/blue.jpg" alt="Blue Browser icon" class="w-full h-full object-cover">
-      </div>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">NATIVE</span>
-      </div>
-      <h4 class="mt-4 text-xl font-bold text-white">Blue Browser</h4>
-      <p class="mt-2 text-sm text-slate-400 flex-1">Fast native Windows browser with a crisp blue theme, built-in tracking protection and local bookmarks.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="stat-chip">⭐ <span data-stat="stars" class="k">…</span></span>
-        <span class="stat-chip"><span data-stat="lang">…</span></span>
-        <span class="text-slate-500">Windows 10/11</span>
-      </div>
-      <div class="mt-4 flex flex-col gap-2">
-        <a href="https://github.com/shivamkumarmehta64-sketch/Blue-Browser-Tauri/releases/download/v0.1.0/Blue.Browser_0.1.0_x64-setup.exe" class="w-full text-center px-5 py-2.5 btn-primary">Download Setup</a>
-        <a href="https://github.com/shivamkumarmehta64-sketch/Blue-Browser-Tauri/releases/download/v0.1.0/Blue.Browser_0.1.0_x64_en-US.msi" class="w-full text-center px-5 py-2.5 btn-primary">Download MSI</a>
-        <a href="https://github.com/shivamkumarmehta64-sketch/Blue-Browser-Tauri" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-ghost">View repo ↗</a>
-        <a href="/app/blue-browser.html" class="w-full text-center px-5 py-2.5 btn-ghost">Details</a>
-      </div>
-    </article>
+    <section id="features" style="padding-top: 1.5rem;">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-kicker">Architecture</span>
+          <h2 class="section-title">Everything essential. Nothing in your way.</h2>
+        </div>
 
-    <!-- Cinematic Birthday -->
-    <article data-repo="shivamkumarmehta64-sketch/cinematic-birthday" class="glass rounded-3xl p-6 card-hover flex flex-col reveal">
-      <div class="flex items-start justify-between">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500/30 to-orange-500/30 ring-1 ring-white/10 flex items-center justify-center text-3xl">🎂</div>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/20">LIVE</span>
-      </div>
-      <h4 class="mt-4 text-xl font-bold text-white">Cinematic Birthday</h4>
-      <p class="mt-2 text-sm text-slate-400 flex-1">Animated Next.js birthday greeting site — full-screen cinematic effects, live on Cloudflare Pages.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="stat-chip">Web app</span>
-        <span class="stat-chip"><span data-stat="lang">…</span></span>
-        <span class="text-slate-500">Open in browser</span>
-      </div>
-      <div class="mt-4 flex flex-col gap-2">
-        <a href="https://cinematic-birthday-3ou.pages.dev" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-primary">Open app</a>
-        <a href="https://github.com/shivamkumarmehta64-sketch/cinematic-birthday" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-ghost">View repo ↗</a>
-      </div>
-    </article>
+        <div class="bento">
+          <article class="card">
+            <span class="card-badge" style="background: rgba(10,132,255,0.14); color: var(--blue);">3-Layer AdShield</span>
+            <h3>Silence trackers &amp; video ads.</h3>
+            <p>Network-level domain blocking, YouTube JSON payload stripping, and automated skip logic work together before ads ever paint to the screen.</p>
+          </article>
 
-    <!-- Electronics Calculator -->
-    <article data-repo="shivamkumarmehta64-sketch/Electronics_Calculator" class="glass rounded-3xl p-6 card-hover flex flex-col reveal">
-      <div class="flex items-start justify-between">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/30 to-cyan-500/30 ring-1 ring-white/10 flex items-center justify-center text-3xl font-extrabold text-indigo-200">∑</div>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-400/20">ANDROID</span>
+          <article class="card">
+            <span class="card-badge" style="background: rgba(48,209,88,0.14); color: var(--green);">DPAPI Encryption</span>
+            <h3>Your passwords stay on your silicon.</h3>
+            <p>Credentials, bookmarks, and history are encrypted locally using the Windows Data Protection API (DPAPI) — never synced to third-party servers.</p>
+          </article>
+
+          <article class="card">
+            <span class="card-badge" style="background: rgba(191,90,242,0.14); color: var(--purple);">Evergreen WebView2</span>
+            <h3>Modern web without the bloat.</h3>
+            <p>Reuses the system-level Microsoft Edge WebView2 runtime with custom dark glass chrome, <code class="mono">black://home</code> Speed Dial, QR share, and MV2 extensions.</p>
+          </article>
+        </div>
       </div>
-      <h4 class="mt-4 text-xl font-bold text-white">Electronics Calculator</h4>
-      <p class="mt-2 text-sm text-slate-400 flex-1">Scientific calculator Android app — sin, cos, tan, log, factorial and expression parsing.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="stat-chip">⭐ <span data-stat="stars" class="k">…</span></span>
-        <span class="stat-chip">🔀 <span data-stat="forks" class="k">…</span></span>
-        <span class="stat-chip"><span data-stat="lang">…</span></span>
+    </section>
+
+    <section id="benchmark" style="padding-top: 1.5rem;">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-kicker" style="color: var(--green);">Efficiency</span>
+          <h2 class="section-title">A fraction of the memory footprint.</h2>
+        </div>
+
+        <div class="bench-panel">
+          <div class="bench-row">
+            <div class="bench-meta">
+              <strong>Black Browser (C# + WebView2)</strong>
+              <span class="mono" style="color: var(--green);">~58 MB RAM</span>
+            </div>
+            <div class="bench-track">
+              <div class="bench-fill" style="width: 14%; background: linear-gradient(90deg, #0a84ff, #30d158);"></div>
+            </div>
+          </div>
+
+          <div class="bench-row">
+            <div class="bench-meta">
+              <span style="color: var(--text-secondary);">Standard Multi-Process Browsers</span>
+              <span class="mono" style="color: var(--text-muted);">450+ MB RAM</span>
+            </div>
+            <div class="bench-track">
+              <div class="bench-fill" style="width: 88%; background: rgba(255, 255, 255, 0.22);"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="mt-2 text-xs text-slate-500">🕒 updated <span data-stat="updated">…</span></div>
-      <div class="mt-4 flex flex-col gap-2">
-        <a href="https://github.com/shivamkumarmehta64-sketch/Electronics_Calculator" target="_blank" rel="noopener" class="w-full text-center px-5 py-2.5 btn-ghost">View repo ↗</a>
-        <a href="/app/calculator.html" class="w-full text-center px-5 py-2.5 btn-ghost">Details</a>
-      </div>
-    </article>
+    </section>
+  </main>
 
-  </div>
-</section>
+  <footer>
+    <div class="footer-links">
+      <a href="download.html">Downloads</a>
+      <a href="releases.html">Release History</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="https://shivamkumarmehta64-sketch.github.io/all-websites-3d/">Creator Portfolio</a>
+      <a href="https://github.com/shivamkumarmehta64-sketch/Black-Firefox" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <p>© 2026 Black Browser · Engineered by Shivam Kumar Mehta · Independent MIT Open-Source Software</p>
+  </footer>
 
-<!-- WHY -->
-<section id="why" class="px-4 pb-20">
-  <h3 class="max-w-6xl mx-auto text-2xl font-bold text-white mb-2 px-1">Why these apps</h3>
-  <p class="max-w-6xl mx-auto text-slate-400 mb-8 px-1">Privacy-respecting, free, and built to be lightweight.</p>
-  <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-    <div class="glass rounded-2xl p-6 card-hover reveal">
-      <div class="text-2xl mb-3">🪟</div>
-      <h5 class="font-semibold text-white">Glassmorphism UI</h5>
-      <p class="mt-1.5 text-sm text-slate-400">Frosted translucent panels with 24px backdrop blur and GPU-accelerated rendering.</p>
-    </div>
-    <div class="glass rounded-2xl p-6 card-hover reveal">
-      <div class="text-2xl mb-3">🧊</div>
-      <h5 class="font-semibold text-white">Glass New Tab</h5>
-      <p class="mt-1.5 text-sm text-slate-400">Live clock, weather, custom search, speed dial grid and an animated canvas backdrop.</p>
-    </div>
-    <div class="glass rounded-2xl p-6 card-hover reveal">
-      <div class="text-2xl mb-3">📁</div>
-      <h5 class="font-semibold text-white">Collapsible Sidebar</h5>
-      <p class="mt-1.5 text-sm text-slate-400">Bookmarks, history, downloads, quick notes and an AI assistant — one click away.</p>
-    </div>
-    <div class="glass rounded-2xl p-6 card-hover reveal">
-      <div class="text-2xl mb-3">😴</div>
-      <h5 class="font-semibold text-white">Tab Sleeping</h5>
-      <p class="mt-1.5 text-sm text-slate-400">Inactive tabs suspend automatically after 5 minutes to keep RAM usage low.</p>
-    </div>
-    <div class="glass rounded-2xl p-6 card-hover reveal">
-      <div class="text-2xl mb-3">🎬</div>
-      <h5 class="font-semibold text-white">Media Suite</h5>
-      <p class="mt-1.5 text-sm text-slate-400">Picture-in-Picture, one-click tab muting and a live media session HUD.</p>
-    </div>
-    <div class="glass rounded-2xl p-6 card-hover reveal">
-      <div class="text-2xl mb-3">🛡️</div>
-      <h5 class="font-semibold text-white">Privacy & Security</h5>
-      <p class="mt-1.5 text-sm text-slate-400">Built-in ad-blocking, HTTPS enforcement, script toggles and a master-password protected password manager.</p>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="px-4 pb-20">
-  <div class="glow-card grad-border max-w-4xl mx-auto rounded-3xl p-8 sm:p-12 text-center reveal">
-    <h3 class="text-3xl font-extrabold text-white tracking-tight">100% free. <span class="text-grad">Always.</span></h3>
-    <p class="mt-3 text-slate-400 max-w-lg mx-auto">No subscriptions, no ads, no data selling. Download what you like, keep it forever.</p>
-    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-      <a href="/apps.html" class="px-8 py-3.5 btn-primary text-base">Start downloading</a>
-      <a href="/download.html" class="px-8 py-3.5 btn-ghost text-base">Install guide</a>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="border-t border-white/10 px-4 py-10">
-  <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-    <div class="flex items-center gap-2.5">
-      <img src="assets/black.png" alt="Logo" class="w-7 h-7 rounded-lg">
-      <span class="text-sm text-slate-400">© 2026 Shivam Kumar Mehta. Built with ❤️ — free forever.</span>
-    </div>
-    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
-      <a href="/apps.html" class="text-slate-400 hover:text-white transition">Apps</a>
-      <a href="/releases.html" class="text-slate-400 hover:text-white transition">Releases</a>
-      <a href="/about.html" class="text-slate-400 hover:text-white transition">About</a>
-      <a href="/download.html" class="text-slate-400 hover:text-white transition">Install guide</a>
-      <a href="/privacy.html" class="text-slate-400 hover:text-white transition">Privacy & FAQ</a>
-    </div>
-    <a href="https://github.com/shivamkumarmehta64-sketch" target="_blank" rel="noopener" class="text-sm text-indigo-300 hover:text-indigo-200 transition">GitHub profile ↗</a>
-  </div>
-</footer>
-
-<script src="assets/app.js"></script>
-<script>
-(function () {
-  var box = document.getElementById('cine-parts');
-  if (!box) return;
-  var count = window.innerWidth < 600 ? 18 : 32;
-  for (var i = 0; i < count; i++) {
-    var p = document.createElement('div');
-    p.className = 'cine-particle';
-    var s = Math.random() * 4 + 2;
-    p.style.width = s + 'px';
-    p.style.height = s + 'px';
-    p.style.left = (Math.random() * 100) + '%';
-    p.style.animationDuration = (Math.random() * 9 + 6) + 's';
-    p.style.animationDelay = (Math.random() * 9) + 's';
-    box.appendChild(p);
-  }
-})();
-</script>
+  <script>
+    (async () => {
+      try {
+        const res = await fetch('https://api.github.com/repos/shivamkumarmehta64-sketch/Black-Firefox/releases/latest');
+        if (!res.ok) return;
+        const rel = await res.json();
+        if (rel.tag_name) {
+          const badge = document.getElementById('version-badge');
+          if (badge) badge.textContent = `${rel.tag_name} · Windows 10 / 11 (x64) · MIT Open Source`;
+        }
+        if (Array.isArray(rel.assets)) {
+          const exe = rel.assets.find(a => /-setup\.exe$/i.test(a.name));
+          const zip = rel.assets.find(a => /\.zip$/i.test(a.name));
+          const sha = rel.assets.find(a => /sha256/i.test(a.name));
+          if (exe) {
+            document.getElementById('hero-setup-btn').href = exe.browser_download_url;
+            document.getElementById('nav-dl-btn').href = exe.browser_download_url;
+          }
+          if (zip) document.getElementById('hero-zip-btn').href = zip.browser_download_url;
+          if (sha) document.getElementById('hero-sha-btn').href = sha.browser_download_url;
+        }
+      } catch {
+        // Fallback links already point to v9.1.0
+      }
+    })();
+  </script>
 </body>
-
 </html>
-
-
