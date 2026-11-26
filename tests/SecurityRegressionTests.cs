@@ -27,15 +27,15 @@ namespace BlackBrowserTests
 
         private static void TestUpdaterUrlAllowlist()
         {
-            Assert(UpdateManager.IsAllowedReleaseUrl("https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases/download/v9.1.0/BlackBrowser.zip"),
+            Assert(UpdateManager.IsAllowedReleaseUrl("https://github.com/shivamkumarmehta64-sketch/BlackBrowser/releases/download/v9.1.0/BlackBrowser.zip"),
                 "Allows official GitHub release URL");
             Assert(UpdateManager.IsAllowedReleaseUrl("https://objects.githubusercontent.com/github-production-release-asset/12345"),
                 "Allows GitHub objects CDN URL");
-            Assert(!UpdateManager.IsAllowedReleaseUrl("http://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases/download/v9.1.0/BlackBrowser.zip"),
+            Assert(!UpdateManager.IsAllowedReleaseUrl("http://github.com/shivamkumarmehta64-sketch/BlackBrowser/releases/download/v9.1.0/BlackBrowser.zip"),
                 "Rejects non-HTTPS release URL");
             Assert(!UpdateManager.IsAllowedReleaseUrl("https://evil.example.com/BlackBrowser.zip"),
                 "Rejects untrusted host URL");
-            Assert(!UpdateManager.IsAllowedReleaseUrl("https://github.com/attacker/Black-Firefox/releases/download/v9.1.0/BlackBrowser.zip"),
+            Assert(!UpdateManager.IsAllowedReleaseUrl("https://github.com/attacker/BlackBrowser/releases/download/v9.1.0/BlackBrowser.zip"),
                 "Rejects different GitHub owner URL");
             Assert(!UpdateManager.IsAllowedReleaseUrl(""),
                 "Rejects empty release URL");

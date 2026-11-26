@@ -46,7 +46,7 @@ namespace BlackBrowser
                             new BookmarkItem
                             {
                                 Title = "Black Browser",
-                                Url = "https://shivamkumarmehta64-sketch.github.io/Black-Firefox/",
+                                Url = "https://shivamkumarmehta64-sketch.github.io/BlackBrowser/",
                                 AddedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm")
                             },
                             new BookmarkItem

@@ -31,7 +31,7 @@ namespace BlackBrowser
     public static class UpdateManager
     {
         public const string CurrentVersion = "v9.1.0";
-        public const string GitHubRepo = "shivamkumarmehta64-sketch/Black-Firefox";
+        public const string GitHubRepo = "shivamkumarmehta64-sketch/BlackBrowser";
         public const long MaxUpdatePackageBytes = 250L * 1024L * 1024L; // 250 MB hard cap
         private static readonly string ApiUrl = "https://api.github.com/repos/" + GitHubRepo + "/releases/latest";
 

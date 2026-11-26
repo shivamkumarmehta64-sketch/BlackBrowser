@@ -11,7 +11,7 @@
 
 #define MyAppName "Black Browser"
 #define MyAppPublisher "Shivam Kumar Mehta"
-#define MyAppURL "https://github.com/shivamkumarmehta64-sketch/Black-Firefox"
+#define MyAppURL "https://github.com/shivamkumarmehta64-sketch/BlackBrowser"
 #define MyAppExeName "Black.exe"
 
 [Setup]

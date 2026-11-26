@@ -111,8 +111,8 @@ namespace BlackBrowser
 "</ul>\n" +
 "<h2>GitHub &amp; Updates</h2>\n" +
 "<p>\n" +
-"  Official Repository: <a href='https://github.com/shivamkumarmehta64-sketch/Black-Firefox' target='_blank' style='color:#60a5fa;'>github.com/shivamkumarmehta64-sketch/Black-Firefox</a><br>\n" +
-"  Latest Releases: <a href='https://github.com/shivamkumarmehta64-sketch/Black-Firefox/releases' target='_blank' style='color:#60a5fa;'>View Releases &amp; Changelog</a>\n" +
+"  Official Repository: <a href='https://github.com/shivamkumarmehta64-sketch/BlackBrowser' target='_blank' style='color:#60a5fa;'>github.com/shivamkumarmehta64-sketch/BlackBrowser</a><br>\n" +
+"  Latest Releases: <a href='https://github.com/shivamkumarmehta64-sketch/BlackBrowser/releases' target='_blank' style='color:#60a5fa;'>View Releases &amp; Changelog</a>\n" +
 "</p>\n" +
 "<h2>Quick Nav</h2>\n" +
 "<p>\n" +
